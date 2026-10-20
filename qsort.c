@@ -15,7 +15,19 @@ static int init_seed = 0;  // Random seed 1 удаа эхлүүлнэ
 */
 static void insertion_sort(int a[], int lo, int hi)
 {
-        /* Оруулан эрэмбэлэх аргыг хэрэгжүүл */
+        int i, j, key;
+
+    for (i = lo + 1; i <= hi; i++) {
+        key = a[i];
+        j = i - 1;
+
+        while (j >= lo && a[j] > key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+
+        a[j + 1] = key;
+    }
 }
 
 /*
@@ -49,7 +61,37 @@ static void random_shuffle(int a[], int lo, int hi)
 */
 static void _single_pivot_qsort(int a[], int lo, int hi)
 {
-        /* Энд quicksort хэрэгжүүл */
+        if (hi <= lo)
+        return;
+
+    if (hi - lo + 1 <= CUTOFF) {
+        insertion_sort(a, lo, hi);
+        return;
+    }
+
+    int pivot = a[lo];
+    int i = lo + 1;
+    int j = hi;
+
+    while (1) {
+        while (i <= hi && a[i] < pivot)
+            i++;
+
+        while (j > lo && a[j] > pivot)
+            j--;
+
+        if (i >= j)
+            break;
+
+        swap(&a[i], &a[j]);
+        i++;
+        j--;
+    }
+
+    swap(&a[lo], &a[j]);
+
+    _single_pivot_qsort(a, lo, j - 1);
+    _single_pivot_qsort(a, j + 1, hi);
 }
 
 /*
@@ -67,9 +109,59 @@ void single_pivot_qsort(int a[], int lo, int hi)
 */
 static void _dual_pivot_qsort(int a[], int lo, int hi)
 {
-        /*
-          Энд dual-pivot quicksort хэрэгжүүл
-        */
+        if (hi <= lo)
+        return;
+
+    if (hi - lo + 1 <= CUTOFF) {
+        insertion_sort(a, lo, hi);
+        return;
+    }
+
+    if (a[lo] > a[hi])
+        swap(&a[lo], &a[hi]);
+
+    int pivot1 = a[lo];
+    int pivot2 = a[hi];
+
+    int i = lo + 1;
+    int lt = lo + 1;
+    int gt = hi - 1;
+
+    while (i <= gt) {
+        if (a[i] < pivot1) {
+            swap(&a[i], &a[lt]);
+            lt++;
+            i++;
+        } else if (a[i] > pivot2) {
+            while (i < gt && a[gt] > pivot2)
+                gt--;
+
+            swap(&a[i], &a[gt]);
+            gt--;
+
+            if (a[i] < pivot1) {
+                swap(&a[i], &a[lt]);
+                lt++;
+            }
+
+            i++;
+        } else {
+            i++;
+        }
+    }
+
+    lt--;
+    gt++;
+
+    swap(&a[lo], &a[lt]);
+    swap(&a[hi], &a[gt]);
+
+    _dual_pivot_qsort(a, lo, lt - 1);
+
+    if (pivot1 < pivot2)
+        _dual_pivot_qsort(a, lt + 1, gt - 1);
+
+    _dual_pivot_qsort(a, gt + 1, hi);
 	
 }
 /*
